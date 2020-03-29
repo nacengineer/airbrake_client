@@ -11,7 +11,14 @@ defmodule Airbrake.Mixfile do
         Elixir notifier to Airbrake.io (or Errbit) with plugs for Phoenix for automatic reporting.
       """,
       deps: deps(),
-      docs: docs()
+      docs: docs(),
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 
@@ -38,8 +45,10 @@ defmodule Airbrake.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.9 or ~> 1.0"},
+      {:mox, "~> 0.5", only: :test},
       {:poison, ">= 2.0.0", optional: true},
-      {:ex_doc, "~> 0.19", only: [:dev, :test]}
+      {:ex_doc, "~> 0.19", only: [:dev, :test]},
+      {:excoveralls, "~> 0.12.0", only: :test}
     ]
   end
 end
