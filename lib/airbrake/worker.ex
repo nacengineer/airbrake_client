@@ -10,7 +10,9 @@ defmodule Airbrake.Worker do
   @name __MODULE__
   @request_headers [{"Content-Type", "application/json"}]
   @default_host "https://airbrake.io"
-  @http_adapter Application.get_env(:airbrake_client, :http_adapter)
+  @http_adapter :airbrake_client
+                |> Application.get_env(:private, [])
+                |> Keyword.get(:http_adapter, HTTPoison)
 
   @doc """
   Send a report to Airbrake.
