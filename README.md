@@ -47,6 +47,7 @@ config :airbrake_client,
   project_id: System.get_env("AIRBRAKE_PROJECT_ID"),
   environment: Mix.env(),
   filter_parameters: ["password"],
+  filter_headers: ["authorization"],
   host: "https://api.airbrake.io" # or your Errbit host
 
 config :logger,
@@ -66,6 +67,7 @@ Options configuration arguments:
     will be attached to each reported exception.
   * `:filter_parameters` - (list of binaries) allows to filter out sensitive
     parameters such as passwords and tokens.
+  * `:filter_headers` - (list of binaries) filters HTTP headers.
   * `:host` - (binary) use it when you have an Errbit installation.
   * `:ignore` - (MapSet of binary or function returning boolean or :all) allows
     to ignore some or all exceptions.  See examples below.

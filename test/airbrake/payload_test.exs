@@ -313,4 +313,21 @@ defmodule Airbrake.PayloadTest do
              } = payload |> Jason.encode!() |> Jason.decode!()
     end
   end
+
+  test "it filters sensitive headers in the environment" do
+    Application.put_env(:airbrake, :filter_headers, ["authorization"])
+
+    payload =
+      get_payload(
+        env: %{
+          "headers" => %{"authorization" => "Bearer JWT", "x" => "y"},
+          "httpMethod" => "POST"
+        }
+      )
+
+    assert "[FILTERED]" == payload.environment["headers"]["authorization"]
+    assert "y" == payload.environment["headers"]["x"]
+    assert "POST" == payload.environment["httpMethod"]
+    Application.delete_env(:airbrake, :filter_headers)
+  end
 end
