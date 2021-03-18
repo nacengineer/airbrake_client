@@ -19,6 +19,7 @@ defmodule Airbrake.Payload do
             session: nil
 
   alias Airbrake.Payload.Backtrace
+  alias Airbrake.Utils
 
   def new(exception, stacktrace, options \\ [])
 
@@ -85,28 +86,15 @@ defmodule Airbrake.Payload do
   defp add_session(payload, nil), do: payload
   defp add_session(payload, session), do: Map.put(payload, :session, session)
 
-  defp filter_parameters(params) do
-    filter(params, Airbrake.Worker.get_env(:filter_parameters))
-  end
-
-  defp filter(map, nil) do
-    map
-  end
-
-  defp filter(map, filtered_attributes) do
-    Enum.into(map, %{}, fn {k, v} ->
-      if Enum.member?(filtered_attributes, k), do: {k, "[FILTERED]"}, else: {k, v}
-    end)
-  end
+  defp filter_parameters(params), do: filter(params, :filter_parameters)
 
   defp filter_environment(env) do
-    case Map.get(env, "headers") do
-      nil ->
-        env
+    if Map.has_key?(env, "headers"),
+      do: Map.update!(env, "headers", &filter(&1, :filter_headers)),
+      else: env
+  end
 
-      headers ->
-        filtered_headers = filter(headers, Airbrake.Worker.get_env(:filter_headers))
-        Map.put(env, "headers", filtered_headers)
-    end
+  defp filter(map, attributes_key) do
+    Utils.filter(map, Airbrake.Worker.get_env(attributes_key))
   end
 end
