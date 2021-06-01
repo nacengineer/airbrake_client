@@ -1,37 +1,96 @@
-# Airbrake Elixir
+# Airbrake Client
 
-[![Build Status](https://travis-ci.org/romul/airbrake-elixir.svg?branch=master)](https://travis-ci.org/romul/airbrake-elixir)
-[![Hex Version](https://img.shields.io/hexpm/v/airbrake.svg "Hex Version")](https://hex.pm/packages/airbrake)
+Capture exceptions and send them to the [Airbrake](http://airbrake.io) or to
+your Errbit installation.
 
-Capture exceptions and send them to the [Airbrake](http://airbrake.io) or to your Errbit installation!
+This library was originally forked from the
+[`airbrake`](https://hex.pm/packages/airbrake) Hex package.  Development and
+support for that library seems to have lapsed, but we (the devs at
+[CityBase](https://thecitybase.com/)) had changes and updates we wanted to make.
+So we decided to publish our own fork of the library.
 
 ## Installation
 
-```elixir
-# 1. Add :airbrake to applications list in your projects mix.exs
+Add `airbrake_client` to your dependencies:
 
-# 2. Add it to your deps in your projects mix.exs
+```elixir
 defp deps do
   [
-    {:airbrake, "~> 0.6"},
-    {:httpoison, "~> 1.0"} # if you use Elixir 1.8+
+    {:airbrake_client, "~> 0.8"}
   ]
 end
+```
 
-# 3. Open up your config/config.exs (or appropriate project config)
+If you are switching from the original `airbrake` library, you should only have
+to switch the dependency to `:airbrake_client` and use version 0.8 or later.
+
+## Configuration
+
+Configure `:airbrake`:
+
+```elixir
 config :airbrake,
   api_key: System.get_env("AIRBRAKE_API_KEY"),
   project_id: System.get_env("AIRBRAKE_PROJECT_ID"),
   environment: Mix.env,
-  host: "https://airbrake.io" # or your Errbit host
+  host: "https://api.airbrake.io" # or your Errbit host
 
 config :logger,
   backends: [{Airbrake.LoggerBackend, :error}, :console]
 ```
 
-## General usage
+### Ignoring some exceptions
 
-**With Phoenix:**
+To ignore some exceptions use the `:ignore` config key.  The value can be a
+`MapSet`:
+
+```elixir
+config :airbrake,
+  ignore: MapSet.new(["Custom.Error"])
+```
+
+The value can also be a two-argument function:
+
+```elixir
+config :airbrake,
+  ignore: fn type, message ->
+    type == "Custom.Error" && String.contains?(message, "silent error")
+  end
+```
+
+Or the value can be the atom `:all` to ignore all errors (and effectively
+turning off all reporting):
+
+```elixir
+config :airbrake,
+  ignore: :all
+```
+
+### Shared options for reporting data to Airbrake
+
+If you have data that should _always_ be reported, they can be included in the
+config with the `:options` key.  Its value should be a keyword list with any of
+these keys: `:context`, `:params`, `:session`, and `:env`.
+
+```elixir
+config :airbrake,
+  options: [env: %{"SOME_ENVIRONMENT_VARIABLE" => "environment variable"}]
+```
+
+Alternatively, you can specify a function (as a tuple) which returns a keyword
+list (with the same keys):
+
+```elixir
+config :airbrake,
+  options: {Web, :airbrake_options, 1}
+```
+
+The function takes a keyword list as its only parameter; the function arity is
+always 1.
+
+## Usage
+
+### Phoenix app
 
 ```elixir
 defmodule YourApp.Router do
@@ -50,60 +109,9 @@ end
       # ...
 ```
 
-
-## Ignore some exceptions
-
-To ignore some exceptions use `:ignore` key in config:
+### Report an exception
 
 ```elixir
-config :airbrake,
-  ignore: MapSet.new(["Custom.Error"])
-
-# or
-
-config :airbrake,
-  ignore: fn(type, message) ->
-    type == "Custom.Error" && String.contains?(message, "silent error")
-  end
-
-# or
-
-config :airbrake,
-  ignore: :all # to disable reporting
-```
-
-## Shared options for reporting data to Airbrake
-
-To include with every report to Airbrake a set of optional data, include the `:options` key in the config. This can either
-be a keyword list of options or a function that returns a keyword list of options. Keyword list keys that can be used are
-`:context`, `:params`, `:session`, and `:env`.
-
-### Options function in config
-
-A function for creating options for reporting should be declared in the config as a tuple of 
-`{ModuleName, :function_name, 1}`. This function should take as an argument a keyword list, possibly empty and should
-return a keyword list. The function arity is always 1.
-
-```elixir
-config :airbrake,
-  options: {Web, :airbrake_options, 1}
-```
-
-### Options keyword list in config
-
-When options are provided as a keyword list in the configuration and a specific call to `Airbrake.report/2` includes 
-options in its parameters, the options will be merged, with the parameters taking precedence.
-
-```elixir
-config :airbrake,
-  options: [env: %{"SOME_ENVIRONMENT_VARIABLE" => "environment variable"}]
-```
-
-
-## Custom usage examples
-
-```elixir
-# Report an exception.
 try do
   String.upcase(nil)
 rescue
@@ -111,29 +119,27 @@ rescue
 end
 ```
 
-**With GenServer:**
+### GenServer
+
+Use `Airbrake.GenServer` instead of `GenServer`:
 
 ```elixir
 defmodule MyServer do
-  # use Airbrake.GenServer instead of GenServer
   use Airbrake.GenServer
   # ...
 end
 ```
 
-**With any process:**
+### Any Elixir process
+
+By pid:
 
 ```elixir
-  Airbrake.monitor(pid)
-  # or
-  Airbrake.monitor(Registered.Process.Name)
-  # or with spawn
-  spawn(fn -> 
-    :timer.sleep(500)
-    String.upcase(nil)
-  end) |> Airbrake.monitor
+Airbrake.monitor(pid)
 ```
 
+By name:
 
-
-
+```elixir
+Airbrake.monitor(Registered.Process.Name)
+``
