@@ -73,8 +73,8 @@ jobs:
       #   run: mix credo --strict
       - name: Check Format
         run: mix format --check-formatted
-      # - name: Run Coveralls
-      #   run: mix coveralls --raise
+      - name: Run Coveralls
+        run: mix coveralls
       - name: Generate Docs
         run: mix docs --output test/doc
       # - name: Create PLTs
