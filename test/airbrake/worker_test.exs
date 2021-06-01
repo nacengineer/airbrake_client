@@ -37,7 +37,7 @@ defmodule Airbrake.WorkerTest do
         {:ok, %{status_code: 204}}
       end)
 
-      Airbrake.Worker.report(exception)
+      Airbrake.Worker.report(exception, stacktrace: stacktrace)
 
       assert_receive(url: url, payload: http_payload)
 
