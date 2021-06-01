@@ -53,6 +53,10 @@ defmodule Airbrake.Worker do
   end
 
   def start_link do
+    start_link([])
+  end
+
+  def start_link([]) do
     GenServer.start_link(@name, %State{}, name: @name)
   end
 

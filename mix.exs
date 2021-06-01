@@ -41,7 +41,7 @@ defmodule Airbrake.Mixfile do
   end
 
   def application do
-    [mod: {Airbrake, []}, applications: [:httpoison]]
+    [mod: {Airbrake, []}]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
