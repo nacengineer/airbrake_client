@@ -24,7 +24,7 @@ defmodule AirbrakeTest do
 
   test "it handles real errors" do
     try do
-      Airbrake.undefined_method()
+      apply(Airbrake, :undefined_method, [])
     rescue
       exception -> Airbrake.report(exception)
     end
