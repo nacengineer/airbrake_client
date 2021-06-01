@@ -67,7 +67,7 @@ defmodule Airbrake.WorkerTest do
 
       Airbrake.Worker.remember(exception)
 
-      assert %State{last_exception: {last_exception, options}} = :sys.get_state(worker_pid)
+      assert %State{last_exception: {last_exception, _options}} = :sys.get_state(worker_pid)
       assert last_exception == expected_state
     end
   end
