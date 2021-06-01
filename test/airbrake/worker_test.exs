@@ -15,7 +15,7 @@ defmodule Airbrake.WorkerTest do
       try do
         Enum.join(3, 'million')
       rescue
-        exception -> {exception, System.stacktrace()}
+        exception -> {exception, __STACKTRACE__}
       end
 
     on_exit(&maybe_stop_worker/0)

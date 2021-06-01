@@ -8,7 +8,7 @@ defmodule Airbrake.PayloadTest do
       # You've been warned!
       apply(Harbour, :cats, [3])
     rescue
-      exception -> [exception, System.stacktrace()]
+      exception -> [exception, __STACKTRACE__]
     end
   end
 
@@ -36,7 +36,7 @@ defmodule Airbrake.PayloadTest do
       try do
         Enum.join(3, 'million')
       rescue
-        exception -> {exception, System.stacktrace()}
+        exception -> {exception, __STACKTRACE__}
       end
 
     %{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
@@ -66,7 +66,7 @@ defmodule Airbrake.PayloadTest do
       try do
         apply(Foo, :bar, [:qux, 1, "foo\n"])
       rescue
-        exception -> {exception, System.stacktrace()}
+        exception -> {exception, __STACKTRACE__}
       end
 
     %{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
