@@ -49,7 +49,6 @@ defmodule Airbrake.WorkerTest do
       assert url =~ "/api/v3/projects/"
       assert url =~ "/notices?key="
       assert decoded_http_payload == expected_payload
-      assert decoded_http_payload == expected_payload
     end
   end
 
