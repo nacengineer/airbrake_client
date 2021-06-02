@@ -4,24 +4,31 @@ defmodule Airbrake.Mixfile do
   def project do
     [
       app: :airbrake,
-      version: "0.6.2",
+      version: "0.8.0",
       elixir: "~> 1.7",
       package: package(),
       description: """
-        The first Elixir notifier to the Airbrake/Errbit.
-        System-wide error reporting enriched with the information from Plug and Phoenix channels.
+        Elixir notifier to Airbrake.io (or Errbit) with plugs for Phoenix for automatic reporting.
       """,
       deps: deps(),
-      docs: [main: "Airbrake"]
+      docs: docs()
+    ]
+  end
+
+  defp docs do
+    [
+      extras: ["README.md", "CHANGELOG.md"],
+      main: "README"
     ]
   end
 
   def package do
     [
-      contributors: ["Roman Smirnov"],
-      maintainers: ["Roman Smirnov"],
+      name: "airbrake_client",
+      contributors: ["Jeremy D. Frens", "Clifton McIntosh", "Roman Smirnov"],
+      maintainers: ["CityBase, Inc."],
       licenses: ["LGPL"],
-      links: %{github: "https://github.com/romul/airbrake-elixir"}
+      links: %{github: "https://github.com/CityBaseInc/airbrake_client"}
     ]
   end
 
@@ -33,7 +40,7 @@ defmodule Airbrake.Mixfile do
     [
       {:httpoison, "~> 0.9 or ~> 1.0"},
       {:poison, ">= 2.0.0", optional: true},
-      {:ex_doc, "~> 0.19", only: :dev}
+      {:ex_doc, "~> 0.19", only: [:dev, :test]}
     ]
   end
 end
