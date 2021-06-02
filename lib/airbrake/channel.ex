@@ -1,5 +1,24 @@
 defmodule Airbrake.Channel do
-  @moduledoc false
+  @moduledoc """
+  Reports errors encountered on a channel.
+
+  ```elixir
+  def YourApp.Web do
+    # ...
+    def channel do
+      quote do
+        use Phoenix.Channel
+        use Airbrake.Channel
+        # ...
+      end
+    end
+    # ...
+  end
+  ```
+
+  See the [README](readme.html) for configuration options.
+  """
+
   defmacro __using__(_env) do
     quote location: :keep do
       @before_compile Airbrake.Channel

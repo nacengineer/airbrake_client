@@ -1,7 +1,7 @@
 # Airbrake Client
 
 Capture exceptions and send them to the [Airbrake](http://airbrake.io) or to
-your Errbit installation.
+your [Errbit](http://errbit.com/) installation.
 
 This library was originally forked from the
 [`airbrake`](https://hex.pm/packages/airbrake) Hex package.  Development and
@@ -22,7 +22,8 @@ end
 ```
 
 If you are switching from the original `airbrake` library, you should only have
-to switch the dependency to `:airbrake_client` and use version 0.8 or later.
+to switch the dependency to `:airbrake_client`.  Version 0.8.0 of this library
+(its first) should be a drop-in replacement.
 
 ## Configuration
 
@@ -32,12 +33,32 @@ Configure `:airbrake`:
 config :airbrake,
   api_key: System.get_env("AIRBRAKE_API_KEY"),
   project_id: System.get_env("AIRBRAKE_PROJECT_ID"),
-  environment: Mix.env,
+  environment: Mix.env(),
+  filter_parameters: ["password"],
   host: "https://api.airbrake.io" # or your Errbit host
 
 config :logger,
   backends: [{Airbrake.LoggerBackend, :error}, :console]
 ```
+
+Required configuration arguments:
+
+  * `:api_key` - (binary) the token needed to access the [Airbrake
+    API](https://airbrake.io/docs/api/). You could find it in [User
+    Settings](https://airbrake.io/users/edit).
+  * `:project_id` - (integer) the id of your project at Airbrake.
+
+Options configuration arguments:
+
+  * `:environment` - (binary or function returning binary) the environment that
+    will be attached to each reported exception.
+  * `:filter_parameters` - (list of binaries) allows to filter out sensitive
+    parameters such as passwords and tokens.
+  * `:host` - (binary) use it when you have an Errbit installation.
+  * `:ignore` - (MapSet of binary or function returning boolean or :all) allows
+    to ignore some or all exceptions.  See examples below.
+  * `:options` - (keyword list or function returning keyword list) values that
+    are included in all reports to Airbrake.io.  See examples below.
 
 ### Ignoring some exceptions
 
@@ -142,4 +163,4 @@ By name:
 
 ```elixir
 Airbrake.monitor(Registered.Process.Name)
-``
+```

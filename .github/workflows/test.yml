@@ -64,7 +64,6 @@ jobs:
             priv/plts
           key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
       - name: Get Deps
-        if: steps.mix-cache.outputs.cache-hit != 'true'
         run: mix deps.get
       - name: Compile Deps
         run: mix deps.compile
@@ -76,8 +75,8 @@ jobs:
         run: mix format --check-formatted
       # - name: Run Coveralls
       #   run: mix coveralls --raise
-      # - name: Generate Docs
-      #   run: mix docs --output test/doc
+      - name: Generate Docs
+        run: mix docs --output test/doc
       # - name: Create PLTs
       #   if: steps.mix-cache.outputs.cache-hit != 'true'
       #   run: |

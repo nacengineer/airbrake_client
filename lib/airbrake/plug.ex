@@ -1,5 +1,20 @@
 defmodule Airbrake.Plug do
-  @moduledoc false
+  @moduledoc """
+  Reports any error encountered in the plug pipeline.
+
+  To use this plug, add it to your router:
+
+  ```elixir
+  defmodule YourApp.Router do
+    use Phoenix.Router
+    use Airbrake.Plug
+    # ...
+  end
+  ```
+
+  See the [README](readme.html) for configuration options.
+  """
+
   defmacro __using__(_env) do
     quote location: :keep do
       use Plug.ErrorHandler

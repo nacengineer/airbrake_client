@@ -2,76 +2,12 @@ defmodule Airbrake do
   @moduledoc """
   This module provides functions to report any kind of exception to
   [Airbrake](https://airbrake.io/) or [Errbit](http://errbit.com/).
-  For the most common use case it allows the following workflow:
 
-    1. Information about a web-request is collected when an exception are rescued by Airbrake.Plug and Airbrake.Channel
-    2. This information is remembered and then the exception is reraised.
-    3. Airbrake.LoggerBackend catches this exception again, but get another piece of information.
-    4. Both pieces of information are merged and Airbrake.Worker sends it to Airbrake.
+  `Airbrake.report/2` can be used to report directly to Airbrake.io.
+  `Airbrake.Plug` and `Airbrake.Channel` can be used to automatically report
+  errors from controllers or channels.
 
-  As additional benefit, Airbrake.LoggerBackend catches not only exceptions defined with `defexception`,
-  but `exits`, `throws` and errors in background processes as well.
-
-
-  ## Configuration
-  The `:airbrake` application needs to be configured properly in order to
-  work.
-
-    1. Add `:airbrake` to applications list in your projects `mix.exs`
-    2. Add it to your deps in `mix.exs`
-
-          defp deps do
-            [{:airbrake, "~> 0.5.2"}]
-          end
-
-    3. Open up your `config/config.exs` (or appropriate project config) and put the following settings in:
-
-          config :airbrake,
-            api_key: System.get_env("AIRBRAKE_API_KEY"),
-            project_id: System.get_env("AIRBRAKE_PROJECT_ID"),
-            environment: Mix.env,
-            host: "https://airbrake.io", # or your Errbit host
-            filter_parameters: ["password"]
-
-          config :logger,
-            backends: [:console, {Airbrake.LoggerBackend, :error}]
-
-
-  The following is a comprehensive list of configuration options supported by Airbrake:
-
-  **Required:**
-    * `:api_key` - *required* (binary) the token needed to access the
-      [Airbrake API](https://airbrake.io/docs/api/). You could find it in [User Settings](https://airbrake.io/users/edit).
-    * `:project_id` - *required* (integer) the id of your project at Airbrake.
-
-  **Optional:**
-    * `:environment` - (binary or function returning binary) the environment that will
-      be attached to each reported exception.
-    * `:host` - (binary) use it when you have an Errbit installation.
-    * `:ignore` - (MapSet of binary or function returning boolean or :all) allows to ignore some or all exceptions.
-    * `:filter_parameters` - (list of binaries) allows to filter out sensitive parameters such as passwords and tokens.
-
-  For `:api_key`, `:project_id` and `:environment` you could use a
-  `{:system, "VAR_NAME"}` tuple. When given a tuple like `{:system, "VAR_NAME"}`,
-  the value will be referenced from `System.get_env("VAR_NAME")` at runtime.
-
-  ### With Phoenix
-
-      defmodule YourApp.Router do
-        use Phoenix.Router
-        use Airbrake.Plug # <- put this line to your router.ex
-        # ...
-      end
-
-  If you use Phoenix channels:
-
-      def channel do
-        quote do
-          use Phoenix.Channel
-          use Airbrake.Channel # <- put this line to your web.ex
-          # ...
-        end
-      end
+  See [README](readme.html) for configuration and usage instructions.
   """
 
   use Application
