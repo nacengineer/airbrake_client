@@ -4,7 +4,7 @@ defmodule Airbrake.Mixfile do
   def project do
     [
       app: :airbrake,
-      version: "0.8.0",
+      version: "0.8.1",
       elixir: "~> 1.7",
       package: package(),
       description: """
@@ -17,8 +17,8 @@ defmodule Airbrake.Mixfile do
 
   defp docs do
     [
-      extras: ["README.md", "CHANGELOG.md"],
-      main: "README"
+      main: "readme",
+      extras: ["README.md", "CHANGELOG.md"]
     ]
   end
 

@@ -1,5 +1,13 @@
 # Changelog for v0.x
 
+## v0.8.1 (2021-06-02)
+
+Quick documentation fix.
+
+### Bug fixes
+
+  * [README.md] Use correct case when linking to `readme.html`.
+
 ## v0.8.0 (2021-06-02)
 
 The first official release of `airbrake_client` (forked and disconnected from [`airbrake`](https://hex.pm/packages/airbrake)).
