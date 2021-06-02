@@ -95,7 +95,7 @@ defmodule Airbrake.Worker do
     unless ignore?(exception) do
       enhanced_options = build_options(options)
       payload = Airbrake.Payload.new(exception, stacktrace, enhanced_options)
-      json_encoder = Application.get_env(:airbrake, :json_encoder, Poison)
+      json_encoder = Application.get_env(:airbrake_client, :json_encoder, Poison)
       HTTPoison.post(notify_url(), json_encoder.encode!(payload), @request_headers)
     end
   end
@@ -130,7 +130,7 @@ defmodule Airbrake.Worker do
   end
 
   def get_env(key, default \\ nil) do
-    :airbrake
+    :airbrake_client
     |> Application.get_env(key, default)
     |> process_env()
   end

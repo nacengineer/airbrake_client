@@ -91,10 +91,10 @@ defmodule Airbrake.PayloadTest do
   end
 
   test "it filters sensitive params" do
-    Application.put_env(:airbrake, :filter_parameters, ["password"])
+    Application.put_env(:airbrake_client, :filter_parameters, ["password"])
     payload = get_payload(params: %{"password" => "top_secret", "x" => "y"})
     assert "[FILTERED]" == payload.params["password"]
     assert "y" == payload.params["x"]
-    Application.delete_env(:airbrake, :filter_parameters)
+    Application.delete_env(:airbrake_client, :filter_parameters)
   end
 end

@@ -47,7 +47,7 @@ defmodule Airbrake.Payload do
   end
 
   defp env do
-    case Application.get_env(:airbrake, :environment) do
+    case Application.get_env(:airbrake_client, :environment) do
       nil -> hostname()
       {:system, var} -> System.get_env(var) || hostname()
       atom_env when is_atom(atom_env) -> to_string(atom_env)
