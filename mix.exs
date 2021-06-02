@@ -17,8 +17,8 @@ defmodule Airbrake.Mixfile do
 
   defp docs do
     [
-      extras: ["README.md", "CHANGELOG.md"],
-      main: "README"
+      main: "readme",
+      extras: ["README.md", "CHANGELOG.md"]
     ]
   end
 
