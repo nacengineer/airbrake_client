@@ -4,7 +4,7 @@ defmodule Airbrake.Mixfile do
   def project do
     [
       app: :airbrake_client,
-      version: "0.8.1",
+      version: "0.8.2",
       elixir: "~> 1.7",
       package: package(),
       description: """
