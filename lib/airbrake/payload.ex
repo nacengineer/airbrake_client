@@ -1,7 +1,8 @@
 defmodule Airbrake.Payload do
   @moduledoc false
+
   @notifier_info %{
-    name: "Airbrake Elixir",
+    name: "Airbrake Client",
     version: Airbrake.Mixfile.project()[:version],
     url: Airbrake.Mixfile.project()[:package][:links][:github]
   }
