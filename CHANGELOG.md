@@ -1,5 +1,13 @@
 # Changelog for v0.x
 
+## v0.8.2 (2021-06-03)
+
+Renames the app to `:airbrake_client`.
+
+### Bug fixes
+
+  * [mix.exs] Renames the app to `:airbrake_client` so that starting the app for this library is more natural.
+
 ## v0.8.1 (2021-06-02)
 
 Quick documentation fix.
