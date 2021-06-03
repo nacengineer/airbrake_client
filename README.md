@@ -21,16 +21,26 @@ defp deps do
 end
 ```
 
-If you are switching from the original `airbrake` library, you should only have
-to switch the dependency to `:airbrake_client`.  Version 0.8.0 of this library
-(its first) should be a drop-in replacement.
+### Migrating from `airbrake`
+
+If you are switching from the original `airbrake` library:
+
+1. Replace the `:airbrake` dependency with the `:airbrake_client` dependency
+   above.
+1. Remove the `airbrake` dependency in your lockfile.
+    * Command: `mix deps.unlock --unused`
+    * If the dependency remains in the lockfile, check _all_ of your apps and
+      _all_ of your dependencies.
+1. Update your `config/*.exs` files to configure `:airbrake_client` instead of
+   `:airbrake`.
+    * A search-and-replace-in-project on `config :airbrake` can work really well.
+    * When you run your project(even running the tests), you should get a
+      complaint if you're still configuring `:airbrake`.
 
 ## Configuration
 
-Configure `:airbrake`:
-
 ```elixir
-config :airbrake,
+config :airbrake_client,
   api_key: System.get_env("AIRBRAKE_API_KEY"),
   project_id: System.get_env("AIRBRAKE_PROJECT_ID"),
   environment: Mix.env(),
@@ -66,14 +76,14 @@ To ignore some exceptions use the `:ignore` config key.  The value can be a
 `MapSet`:
 
 ```elixir
-config :airbrake,
+config :airbrake_client,
   ignore: MapSet.new(["Custom.Error"])
 ```
 
 The value can also be a two-argument function:
 
 ```elixir
-config :airbrake,
+config :airbrake_client,
   ignore: fn type, message ->
     type == "Custom.Error" && String.contains?(message, "silent error")
   end
@@ -83,7 +93,7 @@ Or the value can be the atom `:all` to ignore all errors (and effectively
 turning off all reporting):
 
 ```elixir
-config :airbrake,
+config :airbrake_client,
   ignore: :all
 ```
 
@@ -94,7 +104,7 @@ config with the `:options` key.  Its value should be a keyword list with any of
 these keys: `:context`, `:params`, `:session`, and `:env`.
 
 ```elixir
-config :airbrake,
+config :airbrake_client,
   options: [env: %{"SOME_ENVIRONMENT_VARIABLE" => "environment variable"}]
 ```
 
@@ -102,7 +112,7 @@ Alternatively, you can specify a function (as a tuple) which returns a keyword
 list (with the same keys):
 
 ```elixir
-config :airbrake,
+config :airbrake_client,
   options: {Web, :airbrake_options, 1}
 ```
 
