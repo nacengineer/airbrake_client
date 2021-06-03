@@ -1,6 +1,6 @@
 # Airbrake Client
 
-Capture exceptions and send them to the [Airbrake](http://airbrake.io) or to
+Capture exceptions and send them to [Airbrake](http://airbrake.io) or to
 your [Errbit](http://errbit.com/) installation.
 
 This library was originally forked from the
