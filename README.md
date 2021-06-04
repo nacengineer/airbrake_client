@@ -16,7 +16,7 @@ Add `airbrake_client` to your dependencies:
 ```elixir
 defp deps do
   [
-    {:airbrake_client, "~> 0.8"}
+    {:airbrake_client, "~> 0.9"}
   ]
 end
 ```
@@ -27,6 +27,8 @@ If you are switching from the original `airbrake` library:
 
 1. Replace the `:airbrake` dependency with the `:airbrake_client` dependency
    above.
+    * You may want to start with version `~> 0.8.0` for maximum backwards
+      compatibility.
 1. Remove the `airbrake` dependency in your lockfile.
     * Command: `mix deps.unlock --unused`
     * If the dependency remains in the lockfile, check _all_ of your apps and

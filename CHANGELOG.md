@@ -1,5 +1,23 @@
 # Changelog for v0.x
 
+## v0.9.0 (2021-06-04)
+
+Fixes deprecations and improves testing.
+
+### Enhancements
+
+  * [Airbrake.Worker] Abstract HTTP client for better testing using `mox`.
+  * [Airbrake.Worker] Add tests.
+  * [Airbrake.LoggerBackend] Add tests.
+  * [Airbrake.LoggerBackend] Use `@behaviour :gen_event` instead of `use GenEvent`.
+  * [mix.exs] Start dependency applications automatically.
+
+### Bug fixes
+
+  * [Airbrake.Channel] Use `__STACKTRACE__` instead of deprecated `System.stacktrace()`.
+  * [Airbrake.Worker] Use `Process.info(self(), :current_stacktrace)` instead of deprecated `System.stacktrace()`.
+  * [Airbrake] Use child spec instead of deprecated `Supervisor.Spec.worker/1`.
+
 ## v0.8.2 (2021-06-03)
 
 Renames the app to `:airbrake_client`.

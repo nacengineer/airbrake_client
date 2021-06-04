@@ -17,7 +17,7 @@ defmodule Airbrake do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(Airbrake.Worker, [])
+      Airbrake.Worker
     ]
 
     opts = [strategy: :one_for_one, name: Airbrake.Supervisor]

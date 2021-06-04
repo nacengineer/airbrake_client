@@ -34,7 +34,7 @@ defmodule Airbrake.Channel do
           super(channel_name, msg, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, msg, %{channel: channel_name})
+            send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg, %{channel: channel_name})
         end
       end
 
@@ -43,7 +43,7 @@ defmodule Airbrake.Channel do
           super(msg_type, msg, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, msg, %{msg_type: msg_type})
+            send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg, %{msg_type: msg_type})
         end
       end
 
@@ -52,7 +52,7 @@ defmodule Airbrake.Channel do
           super(msg, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, msg)
+            send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg)
         end
       end
 
@@ -61,13 +61,11 @@ defmodule Airbrake.Channel do
           super(reason, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, %{reason: reason})
+            send_to_airbrake(exception, __STACKTRACE__, socket.assigns, %{reason: reason})
         end
       end
 
-      defp send_to_airbrake(exception, session, params, context \\ nil) do
-        stacktrace = System.stacktrace()
-
+      defp send_to_airbrake(exception, stacktrace, session, params, context \\ nil) do
         Airbrake.Worker.remember(exception,
           params: params,
           session: session,

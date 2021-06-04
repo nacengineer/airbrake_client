@@ -6,9 +6,9 @@ defmodule Airbrake.PayloadTest do
     try do
       # If the following line is not on line 9 then tests will start failing.
       # You've been warned!
-      Harbour.cats(3)
+      apply(Harbour, :cats, [3])
     rescue
-      exception -> [exception, System.stacktrace()]
+      exception -> [exception, __STACKTRACE__]
     end
   end
 
@@ -36,7 +36,7 @@ defmodule Airbrake.PayloadTest do
       try do
         Enum.join(3, 'million')
       rescue
-        exception -> {exception, System.stacktrace()}
+        exception -> {exception, __STACKTRACE__}
       end
 
     %{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
@@ -64,15 +64,15 @@ defmodule Airbrake.PayloadTest do
   test "it generates correct stacktraces when the method arguments are in place of arity" do
     {exception, stacktrace} =
       try do
-        Fart.poo(:butts, 1, "foo\n")
+        apply(Foo, :bar, [:qux, 1, "foo\n"])
       rescue
-        exception -> {exception, System.stacktrace()}
+        exception -> {exception, __STACKTRACE__}
       end
 
     %{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
 
     assert [
-             %{file: "unknown", line: 0, function: "Elixir.Fart.poo(:butts, 1, \"foo\\n\")"},
+             %{file: "unknown", line: 0, function: "Elixir.Foo.bar(:qux, 1, \"foo\\n\")"},
              %{file: "test/airbrake/payload_test.exs", line: _, function: _} | _
            ] = stacktrace
   end
