@@ -1,5 +1,11 @@
 # Changelog for v0.x
 
+## IN PROGRESS
+
+### Bug fixes
+
+  * [Airbrake.Worker] Generate a useable stacktrace when one isn't provided in the options.
+
 ## v0.9.0 (2021-06-04)
 
 Fixes deprecations and improves testing.
@@ -16,7 +22,7 @@ Fixes deprecations and improves testing.
 
   * [Airbrake.Channel] Use `__STACKTRACE__` instead of deprecated `System.stacktrace()`.
   * [Airbrake.Worker] Use `Process.info(self(), :current_stacktrace)` instead of deprecated `System.stacktrace()`.
-  * [Airbrake] Use child spec instead of deprecated `Supervisor.Spec.worker/1`.
+  * [Airbrake] Use child spec instead of deprecated Supervisor.Spec.worker/1.
 
 ## v0.8.2 (2021-06-03)
 
