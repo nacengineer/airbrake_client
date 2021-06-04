@@ -65,17 +65,24 @@ defmodule Airbrake.PayloadTest do
              } = Payload.new(exception, stacktrace)
     end
 
-    test "it reports the error class" do
+    test "reports the error class of an exception" do
       assert %{errors: [error]} = Payload.new(@exception, @stacktrace)
       assert "UndefinedFunctionError" == error.type
     end
 
-    test "it reports the error message" do
+    test "reports the type when explicitly specified"
+
+    test "reports the error message from an exception" do
       assert %{errors: [error]} = Payload.new(@exception, @stacktrace)
 
       assert "function Harbour.cats/1 is undefined (module Harbour is not available)" ==
                error.message
     end
+
+    test "reports the error message when explicitly specified"
+
+    # TODO: extract Airbrake.Payload.Backtrace to test stacktrace-to-backtrace separately
+    # TODO: stacktrace tests here can be done with dependency injection to replace all of the stacktrace tests with just one
 
     test "it generates correct stacktraces" do
       {exception, stacktrace} =
@@ -131,15 +138,23 @@ defmodule Airbrake.PayloadTest do
              ] = stacktrace
     end
 
-    test "it reports the notifier" do
+    test "reports the notifier" do
       assert %{name: "Airbrake Client", url: "https://github.com/CityBaseInc/airbrake_client", version: _} =
                Payload.new(@exception, @stacktrace).notifier
     end
 
-    test "it adds the context when given" do
+    test "sets a default context"
+
+    test "sets the context when given" do
       %{context: context} = Payload.new(@exception, @stacktrace, context: %{msg: "Potato#cake"})
       assert "Potato#cake" == context.msg
     end
+
+    test "sets environment (and rename) when given"
+
+    test "sets params when given"
+
+    test "sets session when given"
 
     test "it filters sensitive params" do
       Application.put_env(:airbrake_client, :filter_parameters, ["password"])
@@ -148,5 +163,15 @@ defmodule Airbrake.PayloadTest do
       assert "y" == payload.params["x"]
       Application.delete_env(:airbrake_client, :filter_parameters)
     end
+  end
+
+  describe "Poison encoding" do
+    test "with minimal options"
+    test "with all options"
+  end
+
+  describe "Jason encoding" do
+    test "with minimal options"
+    test "with all options"
   end
 end
