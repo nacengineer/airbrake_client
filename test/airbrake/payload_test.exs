@@ -27,6 +27,49 @@ defmodule Airbrake.PayloadTest do
   end
 
   describe "new/2 and new/3" do
+    test "generates report with a REAL exception" do
+      {exception, stacktrace} =
+        try do
+          apply(Harbour, :cats, [3])
+        rescue
+          exception -> {exception, __STACKTRACE__}
+        end
+
+      # This is probably VERY fragile, so if it sees a lot of churn, we can
+      # break it down into smaller tests.
+      assert %{
+               apiKey: nil,
+               context: %{environment: _, hostname: _},
+               errors: [
+                 %{
+                   backtrace: [
+                     %{file: "unknown", function: "Elixir.Harbour.cats(3)", line: 0},
+                     %{
+                       file: "test/airbrake/payload_test.exs",
+                       function:
+                         "Elixir.Airbrake.PayloadTest.test new/2 and new/3 generates report with a REAL exception/1",
+                       line: _
+                     },
+                     %{file: "lib/ex_unit/runner.ex", function: "Elixir.ExUnit.Runner.exec_test/1", line: 391},
+                     %{file: "timer.erl", function: "timer.tc/1", line: 166},
+                     %{
+                       file: "lib/ex_unit/runner.ex",
+                       function: "Elixir.ExUnit.Runner.-spawn_test_monitor/4-fun-1-/4",
+                       line: 342
+                     }
+                   ],
+                   message: "function Harbour.cats/1 is undefined (module Harbour is not available)",
+                   type: "UndefinedFunctionError"
+                 }
+               ],
+               notifier: %{
+                 name: "Airbrake Client",
+                 url: "https://github.com/CityBaseInc/airbrake_client",
+                 version: "0.9.0"
+               }
+             } = Payload.new(exception, stacktrace)
+    end
+
     test "it reports the error class" do
       assert "UndefinedFunctionError" == get_error().type
     end
