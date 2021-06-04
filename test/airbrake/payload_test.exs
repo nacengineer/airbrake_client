@@ -27,9 +27,12 @@ defmodule Airbrake.PayloadTest do
   end
 
   describe "new/2 and new/3" do
-    test "it adds the context when given" do
-      %{context: context} = get_payload(context: %{msg: "Potato#cake"})
-      assert "Potato#cake" == context.msg
+    test "it reports the error class" do
+      assert "UndefinedFunctionError" == get_error().type
+    end
+
+    test "it reports the error message" do
+      assert "function Harbour.cats/1 is undefined (module Harbour is not available)" == get_error().message
     end
 
     test "it generates correct stacktraces" do
@@ -82,17 +85,14 @@ defmodule Airbrake.PayloadTest do
              ] = stacktrace
     end
 
-    test "it reports the error class" do
-      assert "UndefinedFunctionError" == get_error().type
-    end
-
-    test "it reports the error message" do
-      assert "function Harbour.cats/1 is undefined (module Harbour is not available)" == get_error().message
-    end
-
     test "it reports the notifier" do
       assert %{name: "Airbrake Client", url: "https://github.com/CityBaseInc/airbrake_client", version: _} =
                get_payload().notifier
+    end
+
+    test "it adds the context when given" do
+      %{context: context} = get_payload(context: %{msg: "Potato#cake"})
+      assert "Potato#cake" == context.msg
     end
 
     test "it filters sensitive params" do
