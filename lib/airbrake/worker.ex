@@ -121,7 +121,8 @@ defmodule Airbrake.Worker do
   end
 
   defp get_stacktrace do
-    Process.info(self(), :current_stacktrace)
+    {:current_stacktrace, stacktrace} = Process.info(self(), :current_stacktrace)
+    stacktrace
   end
 
   defp ignore?(type: type, message: message) do

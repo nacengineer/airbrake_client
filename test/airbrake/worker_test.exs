@@ -50,6 +50,34 @@ defmodule Airbrake.WorkerTest do
       assert url =~ "/notices?key="
       assert decoded_http_payload == expected_payload
     end
+
+    test "generates a stacktrace if one is not provided", %{exception: exception} do
+      caller = self()
+
+      expect(HTTPMock, :post, fn url, payload, _headers ->
+        send(caller, url: url, payload: payload)
+        {:ok, %{status_code: 204}}
+      end)
+
+      Airbrake.Worker.report(exception)
+
+      assert_receive url: _url, payload: http_payload
+
+      assert %{"errors" => [only_error]} = http_payload |> Poison.decode!()
+      assert %{"backtrace" => stacktrace} = only_error
+
+      assert [
+               %{"function" => "Elixir.Process.info/2"},
+               %{"function" => "Elixir.Airbrake.Worker.get_stacktrace/0"},
+               %{"function" => "Elixir.Airbrake.Worker.report/2"},
+               # this stacktrace traces back to THIS test
+               %{
+                 "function" =>
+                   "Elixir.Airbrake.WorkerTest.test report/1 generates a stacktrace if one is not provided/1"
+               }
+               | _
+             ] = stacktrace
+    end
   end
 
   describe "remember/1" do
