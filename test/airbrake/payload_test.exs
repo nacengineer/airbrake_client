@@ -32,7 +32,7 @@ defmodule Airbrake.PayloadTest do
 
       # This is probably VERY fragile, so if it sees a lot of churn, we can
       # break it down into smaller tests.
-      assert %{
+      assert %Payload{
                apiKey: nil,
                context: %{environment: _, hostname: _},
                errors: [
@@ -66,20 +66,35 @@ defmodule Airbrake.PayloadTest do
     end
 
     test "reports the error class of an exception" do
-      assert %{errors: [error]} = Payload.new(@exception, @stacktrace)
+      assert %Payload{errors: [error]} = Payload.new(@exception, @stacktrace)
       assert "UndefinedFunctionError" == error.type
     end
 
-    test "reports the type when explicitly specified"
+    test "reports the type when explicitly specified" do
+      exception_keyword_list = [
+        type: "SomeAwfulError",
+        message: "something really bad happened"
+      ]
+
+      assert %Payload{errors: [%{type: "SomeAwfulError"}]} = Payload.new(exception_keyword_list, @stacktrace)
+    end
 
     test "reports the error message from an exception" do
-      assert %{errors: [error]} = Payload.new(@exception, @stacktrace)
+      assert %Payload{errors: [error]} = Payload.new(@exception, @stacktrace)
 
       assert "function Harbour.cats/1 is undefined (module Harbour is not available)" ==
                error.message
     end
 
-    test "reports the error message when explicitly specified"
+    test "reports the error message when explicitly specified" do
+      exception_keyword_list = [
+        type: "SomeAwfulError",
+        message: "something really bad happened"
+      ]
+
+      assert %Payload{errors: [%{message: "something really bad happened"}]} =
+               Payload.new(exception_keyword_list, @stacktrace)
+    end
 
     # TODO: extract Airbrake.Payload.Backtrace to test stacktrace-to-backtrace separately
     # TODO: stacktrace tests here can be done with dependency injection to replace all of the stacktrace tests with just one
@@ -92,7 +107,7 @@ defmodule Airbrake.PayloadTest do
           exception -> {exception, __STACKTRACE__}
         end
 
-      %{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
+      assert %Payload{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
 
       assert [
                %{file: "lib/enum.ex", line: _, function: _},
@@ -130,7 +145,7 @@ defmodule Airbrake.PayloadTest do
           exception -> {exception, __STACKTRACE__}
         end
 
-      %{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
+      assert %Payload{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
 
       assert [
                %{file: "unknown", line: 0, function: "Elixir.Foo.bar(:qux, 1, \"foo\\n\")"},
@@ -139,29 +154,50 @@ defmodule Airbrake.PayloadTest do
     end
 
     test "reports the notifier" do
-      assert %{name: "Airbrake Client", url: "https://github.com/CityBaseInc/airbrake_client", version: _} =
-               Payload.new(@exception, @stacktrace).notifier
+      assert %Payload{
+               notifier: %{
+                 name: "Airbrake Client",
+                 url: "https://github.com/CityBaseInc/airbrake_client",
+                 version: _
+               }
+             } = Payload.new(@exception, @stacktrace)
     end
 
-    test "sets a default context"
+    test "sets a default context" do
+      assert %Payload{context: context} = Payload.new(@exception, @stacktrace)
+      assert %{environment: _, hostname: _} = context
+    end
 
     test "sets the context when given" do
-      %{context: context} = Payload.new(@exception, @stacktrace, context: %{msg: "Potato#cake"})
+      context = %{msg: "Potato#cake"}
+      assert %Payload{context: context} = Payload.new(@exception, @stacktrace, context: context)
       assert "Potato#cake" == context.msg
     end
 
-    test "sets environment (and rename) when given"
+    test "sets environment when given :env" do
+      env = %{foo: 5, bar: "qux"}
+      assert %Payload{environment: ^env} = Payload.new(@exception, @stacktrace, env: env)
+    end
 
-    test "sets params when given"
+    test "sets params when given" do
+      params = %{foo: 55, bar: "qux"}
+      assert %Payload{params: ^params} = Payload.new(@exception, @stacktrace, params: params)
+    end
 
-    test "sets session when given"
-
-    test "it filters sensitive params" do
+    test "filters sensitive params" do
       Application.put_env(:airbrake_client, :filter_parameters, ["password"])
-      payload = Payload.new(@exception, @stacktrace, params: %{"password" => "top_secret", "x" => "y"})
-      assert "[FILTERED]" == payload.params["password"]
-      assert "y" == payload.params["x"]
+
+      params = %{"password" => "top_secret", "x" => "y"}
+
+      assert %Payload{params: %{"password" => "[FILTERED]", "x" => "y"}} =
+               Payload.new(@exception, @stacktrace, params: params)
+
       Application.delete_env(:airbrake_client, :filter_parameters)
+    end
+
+    test "sets session when given" do
+      session = %{foo: 555, bar: "qux"}
+      assert %Payload{session: ^session} = Payload.new(@exception, @stacktrace, session: session)
     end
   end
 
