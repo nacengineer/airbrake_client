@@ -12,13 +12,7 @@ defmodule Airbrake.PayloadTest do
 
   @stacktrace [
     {Harbour, :cats, [3], []},
-    {:erl_eval, :do_apply, 6, [file: 'erl_eval.erl', line: 680]},
-    {:erl_eval, :try_clauses, 8, [file: 'erl_eval.erl', line: 914]},
-    {:elixir, :recur_eval, 3, [file: 'src/elixir.erl', line: 280]},
-    {:elixir, :eval_forms, 3, [file: 'src/elixir.erl', line: 265]},
-    {IEx.Evaluator, :handle_eval, 5, [file: 'lib/iex/evaluator.ex', line: 261]},
-    {IEx.Evaluator, :do_eval, 3, [file: 'lib/iex/evaluator.ex', line: 242]},
-    {IEx.Evaluator, :eval, 3, [file: 'lib/iex/evaluator.ex', line: 220]}
+    {:timer, :tc, 1, [file: 'timer.erl', line: 166]}
   ]
 
   describe "new/2 and new/3" do
@@ -46,7 +40,7 @@ defmodule Airbrake.PayloadTest do
                        line: _
                      },
                      %{file: "lib/ex_unit/runner.ex", function: "Elixir.ExUnit.Runner.exec_test/1", line: 391},
-                     %{file: "timer.erl", function: "timer.tc/1", line: 166},
+                     %{file: "timer.erl", function: ":timer.tc/1", line: 166},
                      %{
                        file: "lib/ex_unit/runner.ex",
                        function: "Elixir.ExUnit.Runner.-spawn_test_monitor/4-fun-1-/4",
@@ -96,61 +90,20 @@ defmodule Airbrake.PayloadTest do
                Payload.new(exception_keyword_list, @stacktrace)
     end
 
-    # TODO: extract Airbrake.Payload.Backtrace to test stacktrace-to-backtrace separately
-    # TODO: stacktrace tests here can be done with dependency injection to replace all of the stacktrace tests with just one
-
-    test "it generates correct stacktraces" do
-      {exception, stacktrace} =
-        try do
-          Enum.join(3, 'million')
-        rescue
-          exception -> {exception, __STACKTRACE__}
-        end
-
-      assert %Payload{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
-
-      assert [
-               %{file: "lib/enum.ex", line: _, function: _},
-               %{
-                 file: "test/airbrake/payload_test.exs",
-                 line: _,
-                 function: "Elixir.Airbrake.PayloadTest.test new/2 and new/3 it generates correct stacktraces/1"
-               }
-               | _
-             ] = stacktrace
-    end
-
+    # NOTE: turning a stacktrace into a backtrace is tested in more depth with
+    # Airbrake.Payload.Backtrace
     test "it generates correct stacktraces when the current file was a script" do
-      assert %Payload{errors: [error]} = Payload.new(@exception, @stacktrace)
+      stacktrace = [
+        {Harbour, :cats, [3], []},
+        {:timer, :tc, 1, [file: 'timer.erl', line: 166]}
+      ]
 
-      # This is TEMPORARY.  The stacktrace to backtrace translation needs better tests.
+      assert %Payload{errors: [error]} = Payload.new(@exception, stacktrace)
+
       assert [
                %{file: "unknown", function: "Elixir.Harbour.cats(3)", line: 0},
-               %{file: "erl_eval.erl", function: "erl_eval.do_apply/6", line: 680},
-               %{file: "erl_eval.erl", function: "erl_eval.try_clauses/8", line: 914},
-               %{file: "src/elixir.erl", function: "elixir.recur_eval/3", line: 280},
-               %{file: "src/elixir.erl", function: "elixir.eval_forms/3", line: 265},
-               %{file: "lib/iex/evaluator.ex", function: "Elixir.IEx.Evaluator.handle_eval/5", line: 261},
-               %{file: "lib/iex/evaluator.ex", function: "Elixir.IEx.Evaluator.do_eval/3", line: 242},
-               %{file: "lib/iex/evaluator.ex", function: "Elixir.IEx.Evaluator.eval/3", line: 220}
+               %{file: "timer.erl", function: ":timer.tc/1", line: 166}
              ] = error.backtrace
-    end
-
-    # NOTE: Regression test
-    test "it generates correct stacktraces when the method arguments are in place of arity" do
-      {exception, stacktrace} =
-        try do
-          apply(Foo, :bar, [:qux, 1, "foo\n"])
-        rescue
-          exception -> {exception, __STACKTRACE__}
-        end
-
-      assert %Payload{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
-
-      assert [
-               %{file: "unknown", line: 0, function: "Elixir.Foo.bar(:qux, 1, \"foo\\n\")"},
-               %{file: "test/airbrake/payload_test.exs", line: _, function: _} | _
-             ] = stacktrace
     end
 
     test "reports the notifier" do
@@ -158,7 +111,7 @@ defmodule Airbrake.PayloadTest do
                notifier: %{
                  name: "Airbrake Client",
                  url: "https://github.com/CityBaseInc/airbrake_client",
-                 version: _
+                 version: "0.9.0"
                }
              } = Payload.new(@exception, @stacktrace)
     end
