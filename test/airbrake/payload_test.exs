@@ -38,14 +38,8 @@ defmodule Airbrake.PayloadTest do
                        function:
                          "Elixir.Airbrake.PayloadTest.test new/2 and new/3 generates report with a REAL exception/1",
                        line: _
-                     },
-                     %{file: "lib/ex_unit/runner.ex", function: "Elixir.ExUnit.Runner.exec_test/1", line: 391},
-                     %{file: "timer.erl", function: ":timer.tc/1", line: 166},
-                     %{
-                       file: "lib/ex_unit/runner.ex",
-                       function: "Elixir.ExUnit.Runner.-spawn_test_monitor/4-fun-1-/4",
-                       line: 342
                      }
+                     | _rest_of_backtrace
                    ],
                    message: "function Harbour.cats/1 is undefined (module Harbour is not available)",
                    type: "UndefinedFunctionError"
