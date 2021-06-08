@@ -9,7 +9,7 @@ defmodule Airbrake.Worker do
 
   @name __MODULE__
   @request_headers [{"Content-Type", "application/json"}]
-  @default_host "https://airbrake.io"
+  @default_host "https://api.airbrake.io"
   @http_adapter :airbrake_client
                 |> Application.get_env(:private, [])
                 |> Keyword.get(:http_adapter, HTTPoison)
@@ -138,7 +138,12 @@ defmodule Airbrake.Worker do
   defp process_name(pname, pid), do: "#{inspect(pname)} [#{inspect(pid)}]"
 
   defp notify_url do
-    "#{get_env(:host, @default_host)}/api/v3/projects/#{get_env(:project_id)}/notices?key=#{get_env(:api_key)}"
+    Path.join([
+      get_env(:host, @default_host),
+      "api/v3/projects",
+      :project_id |> get_env() |> to_string(),
+      "notices?key=#{get_env(:api_key)}"
+    ])
   end
 
   def get_env(key, default \\ nil) do

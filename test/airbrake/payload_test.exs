@@ -48,7 +48,7 @@ defmodule Airbrake.PayloadTest do
                notifier: %{
                  name: "Airbrake Client",
                  url: "https://github.com/CityBaseInc/airbrake_client",
-                 version: "0.9.0"
+                 version: "0.9.1"
                }
              } = Payload.new(exception, stacktrace)
     end
@@ -105,7 +105,7 @@ defmodule Airbrake.PayloadTest do
                notifier: %{
                  name: "Airbrake Client",
                  url: "https://github.com/CityBaseInc/airbrake_client",
-                 version: "0.9.0"
+                 version: "0.9.1"
                }
              } = Payload.new(@exception, @stacktrace)
     end
@@ -124,6 +124,24 @@ defmodule Airbrake.PayloadTest do
     test "sets environment when given :env" do
       env = %{foo: 5, bar: "qux"}
       assert %Payload{environment: ^env} = Payload.new(@exception, @stacktrace, env: env)
+    end
+
+    test "it filters sensitive headers in the environment" do
+      Application.put_env(:airbrake_client, :filter_headers, ["authorization"])
+
+      env = %{
+        "headers" => %{"authorization" => "Bearer JWT", "x" => "y"},
+        "httpMethod" => "POST"
+      }
+
+      assert %Payload{
+               environment: %{
+                 "headers" => %{"authorization" => "[FILTERED]", "x" => "y"},
+                 "httpMethod" => "POST"
+               }
+             } = Payload.new(@exception, @stacktrace, env: env)
+
+      Application.delete_env(:airbrake_client, :filter_headers)
     end
 
     test "sets params when given" do
@@ -179,7 +197,7 @@ defmodule Airbrake.PayloadTest do
                "notifier" => %{
                  "name" => "Airbrake Client",
                  "url" => "https://github.com/CityBaseInc/airbrake_client",
-                 "version" => "0.9.0"
+                 "version" => "0.9.1"
                },
                "params" => nil,
                "session" => nil
@@ -223,7 +241,7 @@ defmodule Airbrake.PayloadTest do
                "notifier" => %{
                  "name" => "Airbrake Client",
                  "url" => "https://github.com/CityBaseInc/airbrake_client",
-                 "version" => "0.9.0"
+                 "version" => "0.9.1"
                },
                "params" => %{"foo" => 55},
                "session" => %{"foo" => 555}
@@ -262,7 +280,7 @@ defmodule Airbrake.PayloadTest do
                "notifier" => %{
                  "name" => "Airbrake Client",
                  "url" => "https://github.com/CityBaseInc/airbrake_client",
-                 "version" => "0.9.0"
+                 "version" => "0.9.1"
                },
                "params" => nil,
                "session" => nil
@@ -306,7 +324,7 @@ defmodule Airbrake.PayloadTest do
                "notifier" => %{
                  "name" => "Airbrake Client",
                  "url" => "https://github.com/CityBaseInc/airbrake_client",
-                 "version" => "0.9.0"
+                 "version" => "0.9.1"
                },
                "params" => %{"foo" => 55},
                "session" => %{"foo" => 555}

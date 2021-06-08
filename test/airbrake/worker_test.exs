@@ -39,16 +39,31 @@ defmodule Airbrake.WorkerTest do
 
       Airbrake.Worker.report(exception, stacktrace: stacktrace)
 
-      assert_receive(url: url, payload: http_payload)
+      assert_receive url: _url, payload: http_payload
 
       decoded_http_payload =
         http_payload
         |> Poison.decode!()
         |> atomize_keys()
 
-      assert url =~ "/api/v3/projects/"
-      assert url =~ "/notices?key="
       assert decoded_http_payload == expected_payload
+    end
+
+    test "sends the report to the right URL", %{exception: exception, stacktrace: stacktrace} do
+      caller = self()
+
+      expect(HTTPMock, :post, fn url, payload, _headers ->
+        send(caller, url: url, payload: payload)
+        {:ok, %{status_code: 204}}
+      end)
+
+      Airbrake.Worker.report(exception, stacktrace: stacktrace)
+
+      assert_receive url: url, payload: _http_payload
+
+      # Uses default host from Airbrake.Worker.
+      # Uses project id and api key from config/test.exs.
+      assert url == "https://api.airbrake.io/api/v3/projects/8675309/notices?key=TESTING_API_KEY"
     end
 
     test "generates a stacktrace if one is not provided", %{exception: exception} do

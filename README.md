@@ -47,6 +47,7 @@ config :airbrake_client,
   project_id: System.get_env("AIRBRAKE_PROJECT_ID"),
   environment: Mix.env(),
   filter_parameters: ["password"],
+  filter_headers: ["authorization"],
   host: "https://api.airbrake.io" # or your Errbit host
 
 config :logger,
@@ -56,17 +57,19 @@ config :logger,
 Required configuration arguments:
 
   * `:api_key` - (binary) the token needed to access the [Airbrake
-    API](https://airbrake.io/docs/api/). You could find it in [User
+    API](https://airbrake.io/docs/api/). You can find it in [User
     Settings](https://airbrake.io/users/edit).
   * `:project_id` - (integer) the id of your project at Airbrake.
 
-Options configuration arguments:
+Optional configuration arguments:
 
   * `:environment` - (binary or function returning binary) the environment that
     will be attached to each reported exception.
   * `:filter_parameters` - (list of binaries) allows to filter out sensitive
     parameters such as passwords and tokens.
-  * `:host` - (binary) use it when you have an Errbit installation.
+  * `:filter_headers` - (list of binaries) filters HTTP headers.
+  * `:host` - (binary) the URL of the HTTP host; defaults to
+    `https://api.airbrake.io`.
   * `:ignore` - (MapSet of binary or function returning boolean or :all) allows
     to ignore some or all exceptions.  See examples below.
   * `:options` - (keyword list or function returning keyword list) values that

@@ -1,9 +1,14 @@
 # Changelog for v0.x
 
-## IN PROGRESS
+## v0.9.1 (2021-06-08)
+
+### Enhancements
+
+  * [Airbrake] Updates default URL to `https://api.airbrake.io`.
 
 ### Bug fixes
 
+  * [Airbrake] Add `:filter_headers` option to filter HTTP headers included in `:environment`.
   * [Airbrake.Payload] Conditionally derive `Jason.Encoder` if `Jason.Encoder` is defined (i.e., `jason` is a dependency).
   * [Airbrake.Payload] Add fields `context`, `environment`, `params`, and `session` to `Airbrake.Payload`.
   * [Airbrake.Worker] Generate a useable stacktrace when one isn't provided in the options.
