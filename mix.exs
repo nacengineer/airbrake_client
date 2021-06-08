@@ -50,10 +50,12 @@ defmodule Airbrake.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.9 or ~> 1.0"},
+      {:jason, ">= 1.0.0", optional: true},
       {:mox, "~> 0.5", only: :test},
       {:poison, ">= 2.0.0", optional: true},
       {:ex_doc, "~> 0.19", only: [:dev, :test]},
-      {:excoveralls, "~> 0.12.0", only: :test}
+      {:excoveralls, "~> 0.12.0", only: :test},
+      {:stream_data, "~> 0.5", only: :test}
     ]
   end
 

@@ -176,3 +176,9 @@ By name:
 ```elixir
 Airbrake.monitor(Registered.Process.Name)
 ```
+
+## Integration Apps
+
+The Elixir apps defined in `integration_test_apps` are used for testing
+different dependency scenarios.  If you make changes to the way `jason` or
+`poison` is used this library, you should consider adding tests to those apps.

@@ -38,6 +38,37 @@ jobs:
       - run: mix deps.get
       - run: mix test
 
+  poison_only_test:
+    runs-on: ubuntu-latest
+    name: Test - poison only, no jason
+    defaults:
+      run:
+        working-directory: integration_test_apps/poison_only_app
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '23'
+          elixir-version: '1.11'
+      - run: mix deps.get
+      - run: mix test
+
+  jason_only_test:
+    runs-on: ubuntu-latest
+    name: Test - jason only, no poison
+    defaults:
+      run:
+        working-directory: integration_test_apps/jason_only_app
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '23'
+          elixir-version: '1.11'
+      - run: mix deps.get
+      - run: mix test
+
+
   all_tests:
     runs-on: ubuntu-latest
     env:

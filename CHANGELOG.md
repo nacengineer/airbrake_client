@@ -4,6 +4,8 @@
 
 ### Bug fixes
 
+  * [Airbrake.Payload] Conditionally derive `Jason.Encoder` if `Jason.Encoder` is defined (i.e., `jason` is a dependency).
+  * [Airbrake.Payload] Add fields `context`, `environment`, `params`, and `session` to `Airbrake.Payload`.
   * [Airbrake.Worker] Generate a useable stacktrace when one isn't provided in the options.
 
 ## v0.9.0 (2021-06-04)

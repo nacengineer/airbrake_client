@@ -7,7 +7,18 @@ defmodule Airbrake.Payload do
     url: Airbrake.Mixfile.project()[:package][:links][:github]
   }
 
-  defstruct apiKey: nil, notifier: @notifier_info, errors: nil
+  if Code.ensure_loaded?(Jason.Encoder),
+    do: @derive(Jason.Encoder)
+
+  defstruct apiKey: nil,
+            context: nil,
+            environment: nil,
+            errors: nil,
+            notifier: @notifier_info,
+            params: nil,
+            session: nil
+
+  alias Airbrake.Payload.Backtrace
 
   def new(exception, stacktrace, options \\ [])
 
@@ -40,7 +51,7 @@ defmodule Airbrake.Payload do
     error = %{
       type: exception[:type],
       message: exception[:message],
-      backtrace: format_stacktrace(stacktrace)
+      backtrace: Backtrace.from_stacktrace(stacktrace)
     }
 
     Map.put(payload, :errors, [error])
@@ -84,52 +95,5 @@ defmodule Airbrake.Payload do
           if Enum.member?(filter_params, k), do: {k, "[FILTERED]"}, else: {k, v}
         end)
     end
-  end
-
-  defp format_stacktrace(stacktrace) do
-    Enum.map(stacktrace, fn
-      {module, function, args, []} ->
-        %{
-          file: "unknown",
-          line: 0,
-          function: "#{module}.#{function}#{format_args(args)}"
-        }
-
-      {module, function, args, [file: file, line: line_number]} ->
-        %{
-          file: file |> List.to_string(),
-          line: line_number,
-          function: "#{module}.#{function}#{format_args(args)}"
-        }
-
-      string ->
-        info = Regex.named_captures(~r/(?<app>\(.*?\))\s*(?<file>.*?):(?<line>\d+):\s*(?<function>.*)\z/, string)
-
-        if info do
-          %{
-            file: info["file"],
-            line: String.to_integer(info["line"]),
-            function: "#{info["app"]} #{info["function"]}"
-          }
-        else
-          %{
-            file: "unknown",
-            line: 0,
-            function: string
-          }
-        end
-    end)
-  end
-
-  defp format_args(args) when is_integer(args) do
-    "/#{args}"
-  end
-
-  defp format_args(args) when is_list(args) do
-    "(#{
-      args
-      |> Enum.map(&inspect(&1))
-      |> Enum.join(", ")
-    })"
   end
 end
