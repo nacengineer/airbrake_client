@@ -38,6 +38,37 @@ jobs:
       - run: mix deps.get
       - run: mix test
 
+  poison_only_test:
+    runs-on: ubuntu-latest
+    name: Test - poison only, no jason
+    defaults:
+      run:
+        working-directory: integration_test_apps/poison_only_app
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '23'
+          elixir-version: '1.11'
+      - run: mix deps.get
+      - run: mix test
+
+  jason_only_test:
+    runs-on: ubuntu-latest
+    name: Test - jason only, no poison
+    defaults:
+      run:
+        working-directory: integration_test_apps/jason_only_app
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '23'
+          elixir-version: '1.11'
+      - run: mix deps.get
+      - run: mix test
+
+
   all_tests:
     runs-on: ubuntu-latest
     env:
@@ -54,15 +85,6 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
-      - name: Retrieve caches
-        uses: actions/cache@v2
-        id: mix-cache
-        with:
-          path: |
-            deps
-            _build
-            priv/plts
-          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
       - name: Get Deps
         run: mix deps.get
       - name: Compile Deps
@@ -73,12 +95,11 @@ jobs:
       #   run: mix credo --strict
       - name: Check Format
         run: mix format --check-formatted
-      # - name: Run Coveralls
-      #   run: mix coveralls --raise
+      - name: Run Coveralls
+        run: mix coveralls
       - name: Generate Docs
         run: mix docs --output test/doc
       # - name: Create PLTs
-      #   if: steps.mix-cache.outputs.cache-hit != 'true'
       #   run: |
       #     mkdir -p priv/plts
       #     mix dialyzer --plt

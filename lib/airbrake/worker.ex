@@ -10,6 +10,9 @@ defmodule Airbrake.Worker do
   @name __MODULE__
   @request_headers [{"Content-Type", "application/json"}]
   @default_host "https://airbrake.io"
+  @http_adapter :airbrake_client
+                |> Application.get_env(:private, [])
+                |> Keyword.get(:http_adapter, HTTPoison)
 
   @doc """
   Send a report to Airbrake.
@@ -22,7 +25,7 @@ defmodule Airbrake.Worker do
   end
 
   def report([type: _, message: _] = exception, options) when is_list(options) do
-    stacktrace = options[:stacktrace] || System.stacktrace()
+    stacktrace = options[:stacktrace] || get_stacktrace()
     GenServer.cast(@name, {:report, exception, stacktrace, Keyword.delete(options, :stacktrace)})
   end
 
@@ -50,6 +53,10 @@ defmodule Airbrake.Worker do
   end
 
   def start_link do
+    start_link([])
+  end
+
+  def start_link([]) do
     GenServer.start_link(@name, %State{}, name: @name)
   end
 
@@ -96,7 +103,7 @@ defmodule Airbrake.Worker do
       enhanced_options = build_options(options)
       payload = Airbrake.Payload.new(exception, stacktrace, enhanced_options)
       json_encoder = Application.get_env(:airbrake_client, :json_encoder, Poison)
-      HTTPoison.post(notify_url(), json_encoder.encode!(payload), @request_headers)
+      @http_adapter.post(notify_url(), json_encoder.encode!(payload), @request_headers)
     end
   end
 
@@ -111,6 +118,11 @@ defmodule Airbrake.Worker do
       _ ->
         current_options
     end
+  end
+
+  defp get_stacktrace do
+    {:current_stacktrace, stacktrace} = Process.info(self(), :current_stacktrace)
+    stacktrace
   end
 
   defp ignore?(type: type, message: message) do

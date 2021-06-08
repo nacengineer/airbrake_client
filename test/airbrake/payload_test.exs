@@ -2,99 +2,315 @@ defmodule Airbrake.PayloadTest do
   use ExUnit.Case
   alias Airbrake.Payload
 
-  def get_problem do
-    try do
-      # If the following line is not on line 9 then tests will start failing.
-      # You've been warned!
-      Harbour.cats(3)
-    rescue
-      exception -> [exception, System.stacktrace()]
+  @exception %UndefinedFunctionError{
+    arity: 1,
+    function: :cats,
+    message: nil,
+    module: Harbour,
+    reason: nil
+  }
+
+  @stacktrace [
+    {Harbour, :cats, [3], []},
+    {:timer, :tc, 1, [file: 'timer.erl', line: 166]}
+  ]
+
+  describe "new/2 and new/3" do
+    test "generates report with a REAL exception" do
+      {exception, stacktrace} =
+        try do
+          apply(Harbour, :cats, [3])
+        rescue
+          exception -> {exception, __STACKTRACE__}
+        end
+
+      # This is probably VERY fragile, so if it sees a lot of churn, we can
+      # break it down into smaller tests.
+      assert %Payload{
+               apiKey: nil,
+               context: %{environment: _, hostname: _},
+               errors: [
+                 %{
+                   backtrace: [
+                     %{file: "unknown", function: "Elixir.Harbour.cats(3)", line: 0},
+                     %{
+                       file: "test/airbrake/payload_test.exs",
+                       function:
+                         "Elixir.Airbrake.PayloadTest.test new/2 and new/3 generates report with a REAL exception/1",
+                       line: _
+                     }
+                     | _rest_of_backtrace
+                   ],
+                   message: "function Harbour.cats/1 is undefined (module Harbour is not available)",
+                   type: "UndefinedFunctionError"
+                 }
+               ],
+               notifier: %{
+                 name: "Airbrake Client",
+                 url: "https://github.com/CityBaseInc/airbrake_client",
+                 version: "0.9.0"
+               }
+             } = Payload.new(exception, stacktrace)
+    end
+
+    test "reports the error class of an exception" do
+      assert %Payload{errors: [error]} = Payload.new(@exception, @stacktrace)
+      assert "UndefinedFunctionError" == error.type
+    end
+
+    test "reports the type when explicitly specified" do
+      exception_keyword_list = [
+        type: "SomeAwfulError",
+        message: "something really bad happened"
+      ]
+
+      assert %Payload{errors: [%{type: "SomeAwfulError"}]} = Payload.new(exception_keyword_list, @stacktrace)
+    end
+
+    test "reports the error message from an exception" do
+      assert %Payload{errors: [error]} = Payload.new(@exception, @stacktrace)
+
+      assert "function Harbour.cats/1 is undefined (module Harbour is not available)" ==
+               error.message
+    end
+
+    test "reports the error message when explicitly specified" do
+      exception_keyword_list = [
+        type: "SomeAwfulError",
+        message: "something really bad happened"
+      ]
+
+      assert %Payload{errors: [%{message: "something really bad happened"}]} =
+               Payload.new(exception_keyword_list, @stacktrace)
+    end
+
+    # NOTE: turning a stacktrace into a backtrace is tested in more depth with
+    # Airbrake.Payload.Backtrace
+    test "it generates correct stacktraces when the current file was a script" do
+      stacktrace = [
+        {Harbour, :cats, [3], []},
+        {:timer, :tc, 1, [file: 'timer.erl', line: 166]}
+      ]
+
+      assert %Payload{errors: [error]} = Payload.new(@exception, stacktrace)
+
+      assert [
+               %{file: "unknown", function: "Elixir.Harbour.cats(3)", line: 0},
+               %{file: "timer.erl", function: ":timer.tc/1", line: 166}
+             ] = error.backtrace
+    end
+
+    test "reports the notifier" do
+      assert %Payload{
+               notifier: %{
+                 name: "Airbrake Client",
+                 url: "https://github.com/CityBaseInc/airbrake_client",
+                 version: "0.9.0"
+               }
+             } = Payload.new(@exception, @stacktrace)
+    end
+
+    test "sets a default context" do
+      assert %Payload{context: context} = Payload.new(@exception, @stacktrace)
+      assert %{environment: _, hostname: _} = context
+    end
+
+    test "sets the context when given" do
+      context = %{msg: "Potato#cake"}
+      assert %Payload{context: context} = Payload.new(@exception, @stacktrace, context: context)
+      assert "Potato#cake" == context.msg
+    end
+
+    test "sets environment when given :env" do
+      env = %{foo: 5, bar: "qux"}
+      assert %Payload{environment: ^env} = Payload.new(@exception, @stacktrace, env: env)
+    end
+
+    test "sets params when given" do
+      params = %{foo: 55, bar: "qux"}
+      assert %Payload{params: ^params} = Payload.new(@exception, @stacktrace, params: params)
+    end
+
+    test "filters sensitive params" do
+      Application.put_env(:airbrake_client, :filter_parameters, ["password"])
+
+      params = %{"password" => "top_secret", "x" => "y"}
+
+      assert %Payload{params: %{"password" => "[FILTERED]", "x" => "y"}} =
+               Payload.new(@exception, @stacktrace, params: params)
+
+      Application.delete_env(:airbrake_client, :filter_parameters)
+    end
+
+    test "sets session when given" do
+      session = %{foo: 555, bar: "qux"}
+      assert %Payload{session: ^session} = Payload.new(@exception, @stacktrace, session: session)
     end
   end
 
-  def get_payload(options \\ []) do
-    apply(Payload, :new, List.insert_at(get_problem(), -1, options))
+  describe "Poison encoding" do
+    test "with minimal options" do
+      exception = [
+        type: "SomeAwfulError",
+        message: "something really bad happened"
+      ]
+
+      stacktrace = [
+        {Harbour, :cats, [3], []},
+        {:timer, :tc, 1, [file: 'timer.erl', line: 166]}
+      ]
+
+      assert %Payload{} = payload = Payload.new(exception, stacktrace)
+
+      assert %{
+               "apiKey" => nil,
+               "context" => %{"environment" => _, "hostname" => _},
+               "environment" => nil,
+               "errors" => [
+                 %{
+                   "backtrace" => [
+                     %{"file" => "unknown", "function" => "Elixir.Harbour.cats(3)", "line" => 0},
+                     %{"file" => "timer.erl", "function" => ":timer.tc/1", "line" => 166}
+                   ],
+                   "message" => "something really bad happened",
+                   "type" => "SomeAwfulError"
+                 }
+               ],
+               "notifier" => %{
+                 "name" => "Airbrake Client",
+                 "url" => "https://github.com/CityBaseInc/airbrake_client",
+                 "version" => "0.9.0"
+               },
+               "params" => nil,
+               "session" => nil
+             } = payload |> Poison.encode!() |> Poison.decode!()
+    end
+
+    test "with all options" do
+      exception = [
+        type: "SomeAwfulError",
+        message: "something really bad happened"
+      ]
+
+      stacktrace = [
+        {Harbour, :cats, [3], []},
+        {:timer, :tc, 1, [file: 'timer.erl', line: 166]}
+      ]
+
+      context = %{foo: 5}
+      params = %{foo: 55}
+      session = %{foo: 555}
+      env = %{foo: 5555}
+
+      assert %Payload{} =
+               payload =
+               Payload.new(exception, stacktrace, context: context, params: params, session: session, env: env)
+
+      assert %{
+               "apiKey" => nil,
+               "context" => %{"environment" => _, "hostname" => _, "foo" => 5},
+               "environment" => %{"foo" => 5555},
+               "errors" => [
+                 %{
+                   "backtrace" => [
+                     %{"file" => "unknown", "function" => "Elixir.Harbour.cats(3)", "line" => 0},
+                     %{"file" => "timer.erl", "function" => ":timer.tc/1", "line" => 166}
+                   ],
+                   "message" => "something really bad happened",
+                   "type" => "SomeAwfulError"
+                 }
+               ],
+               "notifier" => %{
+                 "name" => "Airbrake Client",
+                 "url" => "https://github.com/CityBaseInc/airbrake_client",
+                 "version" => "0.9.0"
+               },
+               "params" => %{"foo" => 55},
+               "session" => %{"foo" => 555}
+             } = payload |> Poison.encode!() |> Poison.decode!()
+    end
   end
 
-  def get_error(options \\ []) do
-    %{errors: [error]} = get_payload(options)
-    error
-  end
+  describe "Jason encoding" do
+    test "with minimal options" do
+      exception = [
+        type: "SomeAwfulError",
+        message: "something really bad happened"
+      ]
 
-  def get_context(options \\ []) do
-    %{context: context} = get_payload(options)
-    context
-  end
+      stacktrace = [
+        {Harbour, :cats, [3], []},
+        {:timer, :tc, 1, [file: 'timer.erl', line: 166]}
+      ]
 
-  test "it adds the context when given" do
-    %{context: context} = get_payload(context: %{msg: "Potato#cake"})
-    assert "Potato#cake" == context.msg
-  end
+      assert %Payload{} = payload = Payload.new(exception, stacktrace)
 
-  test "it generates correct stacktraces" do
-    {exception, stacktrace} =
-      try do
-        Enum.join(3, 'million')
-      rescue
-        exception -> {exception, System.stacktrace()}
-      end
+      assert %{
+               "apiKey" => nil,
+               "context" => %{"environment" => _, "hostname" => _},
+               "environment" => nil,
+               "errors" => [
+                 %{
+                   "backtrace" => [
+                     %{"file" => "unknown", "function" => "Elixir.Harbour.cats(3)", "line" => 0},
+                     %{"file" => "timer.erl", "function" => ":timer.tc/1", "line" => 166}
+                   ],
+                   "message" => "something really bad happened",
+                   "type" => "SomeAwfulError"
+                 }
+               ],
+               "notifier" => %{
+                 "name" => "Airbrake Client",
+                 "url" => "https://github.com/CityBaseInc/airbrake_client",
+                 "version" => "0.9.0"
+               },
+               "params" => nil,
+               "session" => nil
+             } = payload |> Jason.encode!() |> Jason.decode!()
+    end
 
-    %{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
+    test "with all options" do
+      exception = [
+        type: "SomeAwfulError",
+        message: "something really bad happened"
+      ]
 
-    assert [
-             %{file: "lib/enum.ex", line: _, function: _},
-             %{
-               file: "test/airbrake/payload_test.exs",
-               line: _,
-               function: "Elixir.Airbrake.PayloadTest.test it generates correct stacktraces/1"
-             }
-             | _
-           ] = stacktrace
-  end
+      stacktrace = [
+        {Harbour, :cats, [3], []},
+        {:timer, :tc, 1, [file: 'timer.erl', line: 166]}
+      ]
 
-  test "it generates correct stacktraces when the current file was a script" do
-    assert [
-             %{file: "unknown", line: 0, function: _},
-             %{file: "test/airbrake/payload_test.exs", line: 9, function: "Elixir.Airbrake.PayloadTest.get_problem/0"},
-             %{file: "test/airbrake/payload_test.exs", line: _, function: _} | _
-           ] = get_error().backtrace
-  end
+      context = %{foo: 5}
+      params = %{foo: 55}
+      session = %{foo: 555}
+      env = %{foo: 5555}
 
-  # NOTE: Regression test
-  test "it generates correct stacktraces when the method arguments are in place of arity" do
-    {exception, stacktrace} =
-      try do
-        Fart.poo(:butts, 1, "foo\n")
-      rescue
-        exception -> {exception, System.stacktrace()}
-      end
+      assert %Payload{} =
+               payload =
+               Payload.new(exception, stacktrace, context: context, params: params, session: session, env: env)
 
-    %{errors: [%{backtrace: stacktrace}]} = Payload.new(exception, stacktrace, [])
-
-    assert [
-             %{file: "unknown", line: 0, function: "Elixir.Fart.poo(:butts, 1, \"foo\\n\")"},
-             %{file: "test/airbrake/payload_test.exs", line: _, function: _} | _
-           ] = stacktrace
-  end
-
-  test "it reports the error class" do
-    assert "UndefinedFunctionError" == get_error().type
-  end
-
-  test "it reports the error message" do
-    assert "function Harbour.cats/1 is undefined (module Harbour is not available)" == get_error().message
-  end
-
-  test "it reports the notifier" do
-    assert %{name: "Airbrake Client", url: "https://github.com/CityBaseInc/airbrake_client", version: _} =
-             get_payload().notifier
-  end
-
-  test "it filters sensitive params" do
-    Application.put_env(:airbrake_client, :filter_parameters, ["password"])
-    payload = get_payload(params: %{"password" => "top_secret", "x" => "y"})
-    assert "[FILTERED]" == payload.params["password"]
-    assert "y" == payload.params["x"]
-    Application.delete_env(:airbrake_client, :filter_parameters)
+      assert %{
+               "apiKey" => nil,
+               "context" => %{"environment" => _, "hostname" => _, "foo" => 5},
+               "environment" => %{"foo" => 5555},
+               "errors" => [
+                 %{
+                   "backtrace" => [
+                     %{"file" => "unknown", "function" => "Elixir.Harbour.cats(3)", "line" => 0},
+                     %{"file" => "timer.erl", "function" => ":timer.tc/1", "line" => 166}
+                   ],
+                   "message" => "something really bad happened",
+                   "type" => "SomeAwfulError"
+                 }
+               ],
+               "notifier" => %{
+                 "name" => "Airbrake Client",
+                 "url" => "https://github.com/CityBaseInc/airbrake_client",
+                 "version" => "0.9.0"
+               },
+               "params" => %{"foo" => 55},
+               "session" => %{"foo" => 555}
+             } = payload |> Jason.encode!() |> Jason.decode!()
+    end
   end
 end

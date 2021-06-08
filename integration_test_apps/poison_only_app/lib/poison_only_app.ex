@@ -1,0 +1,2 @@
+defmodule PoisonOnlyApp do
+end
