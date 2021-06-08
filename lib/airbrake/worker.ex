@@ -139,8 +139,8 @@ defmodule Airbrake.Worker do
 
   defp ignore?(nil, _type, _message), do: false
   defp ignore?(:all, _type, _message), do: true
-  defp ignore?(%MapSet{} = types, type, _message), do: MapSet.member?(types, type)
   defp ignore?(fun, type, message) when is_function(fun), do: fun.(type, message)
+  defp ignore?(types, type, _message), do: MapSet.member?(types, type)
 
   defp process_name(pid, pid), do: "Process [#{inspect(pid)}]"
   defp process_name(pname, pid), do: "#{inspect(pname)} [#{inspect(pid)}]"

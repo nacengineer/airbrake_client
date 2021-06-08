@@ -13,6 +13,7 @@ defmodule Airbrake.Mixfile do
         Elixir notifier to Airbrake.io (or Errbit) with plugs for Phoenix for automatic reporting.
       """,
       deps: deps(),
+      dialyzer: dialyzer(),
       docs: docs(),
       preferred_cli_env: [
         all_tests: :test,
@@ -22,6 +23,13 @@ defmodule Airbrake.Mixfile do
         "coveralls.html": :test
       ],
       test_coverage: [tool: ExCoveralls]
+    ]
+  end
+
+  defp dialyzer do
+    [
+      ignore_warnings: ".dialyzer_ignore.exs",
+      list_unused_filters: true
     ]
   end
 
@@ -51,6 +59,7 @@ defmodule Airbrake.Mixfile do
   defp deps do
     [
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev, :test]},
       {:excoveralls, "~> 0.12.0", only: :test},
       {:httpoison, "~> 0.9 or ~> 1.0"},
@@ -68,7 +77,8 @@ defmodule Airbrake.Mixfile do
         "compile --force --warnings-as-errors",
         "credo --strict",
         "format --check-formatted",
-        "coveralls --raise"
+        "coveralls --raise",
+        "dialyzer"
       ]
     ]
   end
