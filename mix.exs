@@ -15,6 +15,7 @@ defmodule Airbrake.Mixfile do
       deps: deps(),
       docs: docs(),
       preferred_cli_env: [
+        all_tests: :test,
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
@@ -56,13 +57,19 @@ defmodule Airbrake.Mixfile do
       {:jason, ">= 1.0.0", optional: true},
       {:mox, "~> 0.5", only: :test},
       {:poison, ">= 2.0.0", optional: true},
-      {:stream_data, "~> 0.5", only: :test}
+      {:stream_data, "~> 0.5", only: [:dev, :test]}
     ]
   end
 
   defp aliases do
     [
-      test: "test --no-start"
+      test: "test --no-start",
+      all_tests: [
+        "compile --force --warnings-as-errors",
+        "credo --strict",
+        "format --check-formatted",
+        "coveralls --raise"
+      ]
     ]
   end
 end

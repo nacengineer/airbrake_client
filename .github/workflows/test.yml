@@ -89,10 +89,10 @@ jobs:
         run: mix deps.get
       - name: Compile Deps
         run: mix deps.compile
-      # - name: Compiler Warnings
-      #   run: mix compile --force --warnings-as-errors
-      # - name: Run Credo
-      #   run: mix credo --strict
+      - name: Compiler Warnings
+        run: mix compile --force --warnings-as-errors
+      - name: Run Credo
+        run: mix credo --strict
       - name: Check Format
         run: mix format --check-formatted
       - name: Run Coveralls
