@@ -2,6 +2,10 @@
 
 ## IN PROGRESS
 
+### Enhancements
+
+  * [Airbrake] Updates default URL to `https://api.airbrake.io`.
+
 ### Bug fixes
 
   * [Airbrake] Add `:filter_headers` option to filter HTTP headers included in `:environment`.
