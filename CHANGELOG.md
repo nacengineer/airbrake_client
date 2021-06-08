@@ -1,6 +1,6 @@
 # Changelog for v0.x
 
-## IN PROGRESS
+## v0.9.1 (2021-06-08)
 
 ### Enhancements
 
