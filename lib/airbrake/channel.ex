@@ -25,44 +25,37 @@ defmodule Airbrake.Channel do
     end
   end
 
+  # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
   defmacro __before_compile__(_env) do
     quote location: :keep do
       defoverridable join: 3, handle_in: 3, handle_info: 2, terminate: 2
 
       def join(channel_name, msg, socket) do
-        try do
-          super(channel_name, msg, socket)
-        rescue
-          exception ->
-            send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg, %{channel: channel_name})
-        end
+        super(channel_name, msg, socket)
+      rescue
+        exception ->
+          send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg, %{channel: channel_name})
       end
 
       def handle_in(msg_type, msg, socket) do
-        try do
-          super(msg_type, msg, socket)
-        rescue
-          exception ->
-            send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg, %{msg_type: msg_type})
-        end
+        super(msg_type, msg, socket)
+      rescue
+        exception ->
+          send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg, %{msg_type: msg_type})
       end
 
       def handle_info(msg, socket) do
-        try do
-          super(msg, socket)
-        rescue
-          exception ->
-            send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg)
-        end
+        super(msg, socket)
+      rescue
+        exception ->
+          send_to_airbrake(exception, __STACKTRACE__, socket.assigns, msg)
       end
 
       def terminate(reason, socket) do
-        try do
-          super(reason, socket)
-        rescue
-          exception ->
-            send_to_airbrake(exception, __STACKTRACE__, socket.assigns, %{reason: reason})
-        end
+        super(reason, socket)
+      rescue
+        exception ->
+          send_to_airbrake(exception, __STACKTRACE__, socket.assigns, %{reason: reason})
       end
 
       defp send_to_airbrake(exception, stacktrace, session, params, context \\ nil) do

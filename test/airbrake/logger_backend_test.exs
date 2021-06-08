@@ -5,7 +5,7 @@ defmodule Airbrake.LoggerBackendTest do
   import ExUnit.CaptureLog
   require Logger
 
-  alias Airbrake.{LoggerBackend, HTTPMock}
+  alias Airbrake.{HTTPMock, LoggerBackend}
 
   setup [:set_mox_global, :verify_on_exit!]
 

@@ -10,9 +10,17 @@ defmodule Airbrake.Worker do
   @name __MODULE__
   @request_headers [{"Content-Type", "application/json"}]
   @default_host "https://api.airbrake.io"
-  @http_adapter :airbrake_client
-                |> Application.get_env(:private, [])
-                |> Keyword.get(:http_adapter, HTTPoison)
+  # credo:disable-for-next-line Credo.Check.Warning.ApplicationConfigInModuleAttribute
+  @http_adapter (if Version.compare(System.version(), "1.10.0-dev") in [:eq, :gt] do
+                   :airbrake_client
+                   |> Application.compile_env(:private, [])
+                   |> Keyword.get(:http_adapter, HTTPoison)
+                 else
+                   # Remove this clause when Elixir 1.10+ is the minimal supported version.
+                   :airbrake_client
+                   |> Application.get_env(:private, [])
+                   |> Keyword.get(:http_adapter, HTTPoison)
+                 end)
 
   @doc """
   Send a report to Airbrake.
