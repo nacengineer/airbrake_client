@@ -13,14 +13,23 @@ defmodule Airbrake.Mixfile do
         Elixir notifier to Airbrake.io (or Errbit) with plugs for Phoenix for automatic reporting.
       """,
       deps: deps(),
+      dialyzer: dialyzer(),
       docs: docs(),
       preferred_cli_env: [
+        all_tests: :test,
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
       ],
       test_coverage: [tool: ExCoveralls]
+    ]
+  end
+
+  defp dialyzer do
+    [
+      ignore_warnings: ".dialyzer_ignore.exs",
+      list_unused_filters: true
     ]
   end
 
@@ -49,19 +58,28 @@ defmodule Airbrake.Mixfile do
 
   defp deps do
     [
+      {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.19", only: [:dev, :test]},
+      {:excoveralls, "~> 0.12.0", only: :test},
       {:httpoison, "~> 0.9 or ~> 1.0"},
       {:jason, ">= 1.0.0", optional: true},
       {:mox, "~> 0.5", only: :test},
       {:poison, ">= 2.0.0", optional: true},
-      {:ex_doc, "~> 0.19", only: [:dev, :test]},
-      {:excoveralls, "~> 0.12.0", only: :test},
-      {:stream_data, "~> 0.5", only: :test}
+      {:stream_data, "~> 0.5", only: [:dev, :test]}
     ]
   end
 
   defp aliases do
     [
-      test: "test --no-start"
+      test: "test --no-start",
+      all_tests: [
+        "compile --force --warnings-as-errors",
+        "credo --strict",
+        "format --check-formatted",
+        "coveralls --raise",
+        "dialyzer"
+      ]
     ]
   end
 end

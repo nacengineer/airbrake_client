@@ -10,9 +10,17 @@ defmodule Airbrake.Worker do
   @name __MODULE__
   @request_headers [{"Content-Type", "application/json"}]
   @default_host "https://api.airbrake.io"
-  @http_adapter :airbrake_client
-                |> Application.get_env(:private, [])
-                |> Keyword.get(:http_adapter, HTTPoison)
+  # credo:disable-for-next-line Credo.Check.Warning.ApplicationConfigInModuleAttribute
+  @http_adapter (if Version.compare(System.version(), "1.10.0-dev") in [:eq, :gt] do
+                   :airbrake_client
+                   |> Application.compile_env(:private, [])
+                   |> Keyword.get(:http_adapter, HTTPoison)
+                 else
+                   # Remove this clause when Elixir 1.10+ is the minimal supported version.
+                   :airbrake_client
+                   |> Application.get_env(:private, [])
+                   |> Keyword.get(:http_adapter, HTTPoison)
+                 end)
 
   @doc """
   Send a report to Airbrake.
@@ -131,8 +139,8 @@ defmodule Airbrake.Worker do
 
   defp ignore?(nil, _type, _message), do: false
   defp ignore?(:all, _type, _message), do: true
-  defp ignore?(%MapSet{} = types, type, _message), do: MapSet.member?(types, type)
   defp ignore?(fun, type, message) when is_function(fun), do: fun.(type, message)
+  defp ignore?(types, type, _message), do: MapSet.member?(types, type)
 
   defp process_name(pid, pid), do: "Process [#{inspect(pid)}]"
   defp process_name(pname, pid), do: "#{inspect(pname)} [#{inspect(pid)}]"

@@ -115,7 +115,7 @@ defmodule Airbrake.WorkerTest do
   end
 
   @spec atomize_keys(any()) :: map()
-  defp atomize_keys(map = %{}) do
+  defp atomize_keys(map) when is_map(map) do
     map
     |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), atomize_keys(v)} end)
     |> Enum.into(%{})
@@ -146,10 +146,8 @@ defmodule Airbrake.WorkerTest do
   end
 
   defp stop_worker(pid_to_stop) do
-    try do
-      GenServer.stop(pid_to_stop, :normal, 1_000)
-    catch
-      :exit, _ -> :ok
-    end
+    GenServer.stop(pid_to_stop, :normal, 1_000)
+  catch
+    :exit, _ -> :ok
   end
 end

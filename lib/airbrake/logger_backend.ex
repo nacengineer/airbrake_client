@@ -25,6 +25,7 @@ defmodule Airbrake.LoggerBackend do
         context: err_info[:context]
       )
     rescue
+      # credo:disable-for-next-line
       exception -> IO.inspect(exception)
     end
 
