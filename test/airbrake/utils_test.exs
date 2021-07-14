@@ -6,6 +6,10 @@ defmodule Airbrake.UtilsTest do
 
   @moduletag :focus
 
+  defmodule Struct do
+    defstruct [:baz, :qux]
+  end
+
   describe "filter/2" do
     property "returns input unchanged when attribute list is nil" do
       check all input <- term() do
@@ -23,7 +27,8 @@ defmodule Airbrake.UtilsTest do
           "z" => 555
         },
         "quuz" => 123,
-        "corge" => [1, 2, "three", %{"quux" => 789}]
+        "corge" => [1, 2, "three", %{"quux" => 789}],
+        "struct" => %Struct{baz: 100, qux: 200}
       }
 
       filtered_attributes = ["qux", "quux", "quuz"]
@@ -37,7 +42,9 @@ defmodule Airbrake.UtilsTest do
                # filters at the top level...
                "quuz" => "[FILTERED]",
                # filters deeply in a list, repeat attribute...
-               "corge" => [1, 2, "three", %{"quux" => "[FILTERED]"}]
+               "corge" => [1, 2, "three", %{"quux" => "[FILTERED]"}],
+               # Filters a struct and casts atom keys to strings...
+               "struct" => %{"baz" => 100, "qux" => "[FILTERED]"}
              }
     end
   end

@@ -1,5 +1,10 @@
 # Changelog for v0.x
 
+## v0.10.0 (2021-07-14)
+
+  * [Airbrake.Payload] Support logging structs in payload.
+  * [Airbrake.Payload] Filter atom keys from maps in payload.
+
 ## v0.9.1 (2021-06-08)
 
 ### Enhancements
