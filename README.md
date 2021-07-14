@@ -16,7 +16,7 @@ Add `airbrake_client` to your dependencies:
 ```elixir
 defp deps do
   [
-    {:airbrake_client, "~> 0.9"}
+    {:airbrake_client, "~> 0.10"}
   ]
 end
 ```

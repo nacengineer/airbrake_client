@@ -8,6 +8,10 @@ defmodule Airbrake.Utils do
     input
   end
 
+  def filter(struct, filtered_attributes) when is_struct(struct) do
+    struct |> Map.from_struct() |> filter(filtered_attributes)
+  end
+
   def filter(map, filtered_attributes) when is_map(map) do
     Enum.into(map, %{}, &filter_key_value(&1, filtered_attributes))
   end
@@ -18,6 +22,10 @@ defmodule Airbrake.Utils do
 
   def filter(other, _filtered_attributes) do
     other
+  end
+
+  def filter_key_value({k, v}, filtered_attributes) when is_atom(k) do
+    filter_key_value({Atom.to_string(k), v}, filtered_attributes)
   end
 
   def filter_key_value({k, v}, filtered_attributes) do
