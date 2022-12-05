@@ -19,7 +19,7 @@ defmodule Airbrake.Plug do
     quote location: :keep do
       use Plug.ErrorHandler
 
-      defp handle_errors(conn, %{kind: :error, reason: exception, stack: stacktrace}) do
+      def handle_errors(conn, %{kind: :error, reason: exception, stack: stacktrace}) do
         conn = conn |> Plug.Conn.fetch_cookies() |> Plug.Conn.fetch_query_params()
         headers = Enum.into(conn.req_headers, %{})
 
@@ -45,7 +45,7 @@ defmodule Airbrake.Plug do
         )
       end
 
-      defp handle_errors(_conn, _map), do: nil
+      def handle_errors(_conn, _map), do: nil
     end
   end
 end
