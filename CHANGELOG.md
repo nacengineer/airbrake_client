@@ -1,5 +1,10 @@
 # Changelog for v0.x
 
+## v0.11.0 (2022-12-05)
+
+  * [Airbrake.Plug] Exposes `handle_errors/2` as private
+  * Fixes credo warnings
+
 ## v0.10.0 (2021-07-14)
 
   * [Airbrake.Payload] Support logging structs in payload.
