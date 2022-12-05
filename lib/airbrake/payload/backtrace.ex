@@ -48,10 +48,6 @@ defmodule Airbrake.Payload.Backtrace do
   end
 
   defp format_args(args) when is_list(args) do
-    "(#{
-      args
-      |> Enum.map(&inspect(&1))
-      |> Enum.join(", ")
-    })"
+    "(#{Enum.map_join(args, ", ", &inspect(&1))})"
   end
 end

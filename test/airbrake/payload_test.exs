@@ -19,7 +19,7 @@ defmodule Airbrake.PayloadTest do
     test "generates report with a REAL exception" do
       {exception, stacktrace} =
         try do
-          apply(Harbour, :cats, [3])
+          Harbour.cats(3)
         rescue
           exception -> {exception, __STACKTRACE__}
         end
