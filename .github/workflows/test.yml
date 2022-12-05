@@ -7,7 +7,7 @@ on:
 
 jobs:
   version_tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       matrix:
@@ -39,7 +39,7 @@ jobs:
       - run: mix test
 
   poison_only_test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: Test - poison only, no jason
     defaults:
       run:
@@ -54,7 +54,7 @@ jobs:
       - run: mix test
 
   jason_only_test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: Test - jason only, no poison
     defaults:
       run:
@@ -70,7 +70,7 @@ jobs:
 
 
   all_tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       MIX_ENV: test
     strategy:

@@ -39,7 +39,7 @@ defmodule JasonOnlyAppTest do
                "notifier" => %{
                  "name" => "Airbrake Client",
                  "url" => "https://github.com/CityBaseInc/airbrake_client",
-                 "version" => "0.10.0"
+                 "version" => "0.11.0"
                },
                "params" => nil,
                "session" => nil
@@ -88,7 +88,7 @@ defmodule JasonOnlyAppTest do
                "notifier" => %{
                  "name" => "Airbrake Client",
                  "url" => "https://github.com/CityBaseInc/airbrake_client",
-                 "version" => "0.10.0"
+                 "version" => "0.11.0"
                },
                "params" => %{"foo" => 55},
                "session" => %{"foo" => 555}
