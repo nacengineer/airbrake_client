@@ -4,7 +4,7 @@ defmodule Airbrake.Mixfile do
   def project do
     [
       app: :airbrake_client,
-      version: "0.11.0",
+      version: "0.11.1",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
@@ -62,7 +62,7 @@ defmodule Airbrake.Mixfile do
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev, :test]},
       {:excoveralls, "~> 0.12.0", only: :test},
-      {:httpoison, "~> 0.9 or ~> 1.0"},
+      {:httpoison, ">= 0.9.0 and < 2.1.0"},
       {:jason, ">= 1.0.0", optional: true},
       {:mox, "~> 0.5", only: :test},
       {:poison, ">= 2.0.0", optional: true},
